@@ -1,0 +1,23 @@
+//
+//  JBSocket.h
+//  SocketOmok
+//
+//  Created by 이재범 on 2014. 9. 12..
+//  Copyright (c) 2014년 jb. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface JBSocket : NSObject
+{
+	NSThread *Wthr, *Rthr;
+	NSMutableArray *Output, *Input;
+    int socketfd;
+	bool isConnected;
+}
+-(id)initWithfd:(int)fd;
+-(NSString *)readString;
+-(void)writeString:(NSString *)str;
+-(void)close;
+-(bool)isClosed;
+@end

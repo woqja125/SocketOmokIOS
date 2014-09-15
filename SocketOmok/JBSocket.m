@@ -58,6 +58,7 @@
 			}
 			n -= c;
 			for(int i=0; i<c; i++) d = d*16+buff[i];
+			[NSThread sleepForTimeInterval:0.01];
 		}
 		c = 0;
 		int l = 0;
@@ -78,13 +79,12 @@
 		if([t isEqualToString:@"__Ping__"])
 			lastPing = [NSDate date];
 		else [Input addObject:t];
-		
 	}
 }
 
 -(NSString *)readString
 {
-	while([self isConnected] && [Input count] == 0);
+	while([self isConnected] && [Input count] == 0)[NSThread sleepForTimeInterval:0.01];
 	if([Input count] == 0) return @"error";
 	NSString *t = [Input objectAtIndex:0];
 	[Input removeObjectAtIndex:0];
@@ -95,6 +95,7 @@
 {
 	while(![[NSThread currentThread] isCancelled])
 	{
+		[NSThread sleepForTimeInterval:0.01];
 		if([Output count] == 0) continue;
 		NSString *t = [Output firstObject];
 		[self sendString:t];

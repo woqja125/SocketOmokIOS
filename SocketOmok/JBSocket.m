@@ -22,7 +22,6 @@
         socketfd = fd;
 		Output = [[NSMutableArray alloc] init];
 		Input = [[NSMutableArray alloc] init];
-		lastPing = [[NSDate alloc] init];
 		isConnected = true;
 		[self performSelectorInBackground:@selector(write) withObject:nil];
 		[self performSelectorInBackground:@selector(read) withObject:nil];
@@ -76,9 +75,7 @@
 		str[l] = 0;
 		t = [NSString stringWithUTF8String:str];
 		
-		if([t isEqualToString:@"__Ping__"])
-			lastPing = [NSDate date];
-		else [Input addObject:t];
+		if(![t isEqualToString:@"__Ping__"]) [Input addObject:t];
 	}
 }
 
@@ -137,13 +134,7 @@
 
 -(bool)isConnected
 {
-	if(isConnected)
-	{
-		NSDate *t = lastPing;
-		NSTimeInterval secondsBetweenDates = [t timeIntervalSinceNow];
-		if(secondsBetweenDates <= 2) return true;
-	}
-	return isConnected = false;
+	return isConnected;
 }
 
 -(void)close

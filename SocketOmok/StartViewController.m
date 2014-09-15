@@ -16,8 +16,8 @@
 #define WAITING_CLIENT_ALERT 2
 #define WAITING_SERVER_ALERT 3
 
-//#define OMOK_PORT 5252
-#define OMOK_PORT 1234
+#define OMOK_PORT 5252
+//#define OMOK_PORT 1234
 @interface StartViewController ()
 
 @end
@@ -28,20 +28,20 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
     }
     return self;
 }
 
 - (void)viewDidLoad
 {
-    [super viewDidLoad];
+	[super viewDidLoad];
+	Ips = [[NSMutableArray alloc] init];
+	Nicks = [[NSMutableArray alloc] init];
     // Do any additional setup after loading the view.
 }
 
 -(IBAction)serverClick:(id)sender
 {
-	
     serverSock = socket( AF_INET, SOCK_STREAM, 0 );
     if(serverSock < 0)
 	{
@@ -76,6 +76,35 @@
 	alert1.tag = WAITING_CLIENT_ALERT;
 	[alert1 show];
 	
+	broadcast = [[NSThread alloc] initWithTarget:self selector:@selector(broadcast:) object:nick.text];
+	[broadcast start];
+	
+}
+
+- (void)broadcast:(NSString *)data {
+	while(![[NSThread currentThread] isCancelled])
+	{
+		[NSThread sleepForTimeInterval:5];
+		int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		
+		struct sockaddr_in addr4client;
+		memset(&addr4client, 0, sizeof(addr4client));
+		addr4client.sin_len = sizeof(addr4client);
+		addr4client.sin_family = AF_INET;
+		addr4client.sin_port = htons(OMOK_PORT);
+		addr4client.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+		
+		int yes = 1;
+		if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (void *)&yes, sizeof(yes)) == -1) {
+			NSLog(@"Failure to set broadcast! : %d", errno);
+		}
+		
+		char *toSend = data.UTF8String;
+		if (sendto(fd, toSend, [data length], 0, (struct sockaddr *)&addr4client, sizeof(addr4client)) == -1) {
+			NSLog(@"Failure to send! : %d", errno);
+		}
+		close(fd);
+	}
 }
 
 -(void)waitforClient
@@ -94,6 +123,111 @@
 	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"find Client!" message:nick delegate:self cancelButtonTitle:@"취소" otherButtonTitles:@"OK", nil];
 	alert.tag = ACCEPT_CLIENT_ALERT;
 	[alert show];
+}
+
+-(IBAction)refreshClick:(id)sender
+{
+	refreshbtn.enabled = NO;
+	[Ips removeAllObjects];
+	[Nicks removeAllObjects];
+	[self performSelectorInBackground:@selector(listenForPackets) withObject:nil];
+}
+
+- (void)listenForPackets
+{
+	NSDate *st = [NSDate date];
+	while(-[st timeIntervalSinceNow] <= 5)
+	{
+		int listeningSocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if (listeningSocket <= 0) {
+			NSLog(@"Error: listenForPackets - socket() failed.");
+			return;
+		}
+		
+		struct sockaddr_in sockaddr;
+		memset(&sockaddr, 0, sizeof(sockaddr));
+		
+		sockaddr.sin_len = sizeof(sockaddr);
+		sockaddr.sin_family = AF_INET;
+		sockaddr.sin_port = htons(OMOK_PORT);
+		sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+		
+		int status = bind(listeningSocket, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
+		if (status == -1) {
+			close(listeningSocket);
+			NSLog(@"Error: listenForPackets - bind() failed.");
+			return;
+		}
+		
+		// receive
+		struct sockaddr_in receiveSockaddr;
+		socklen_t receiveSockaddrLen = sizeof(receiveSockaddr);
+		
+		size_t bufSize = 9216;
+		void *buf = malloc(bufSize);
+		ssize_t result = recvfrom(listeningSocket, buf, bufSize, 0, (struct sockaddr *)&receiveSockaddr, &receiveSockaddrLen);
+		
+		NSData *data = nil;
+	 
+		if (result >= 0) {
+			if ((size_t)result != bufSize) {
+				buf = realloc(buf, result);
+			}
+			data = [NSData dataWithBytesNoCopy:buf length:result freeWhenDone:YES];
+			
+			char addrBuf[INET_ADDRSTRLEN];
+			if (inet_ntop(AF_INET, &receiveSockaddr.sin_addr, addrBuf, (size_t)sizeof(addrBuf)) == NULL) {
+				addrBuf[0] = '\0';
+			}
+			
+			NSString *address = [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
+			NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+			
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[self didReceiveMessage:msg fromAddress:address];
+			});
+			
+		} else {
+			free(buf);
+		}
+		
+		close(listeningSocket);
+	}
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		refreshbtn.enabled = true;
+	});
+}
+
+- (void)didReceiveMessage:(NSString *)message fromAddress:(NSString *)address
+{
+	for(NSString *str in Ips)
+		if([str isEqualToString:address])return;
+	[Ips addObject:address];
+	[Nicks addObject:message];
+	[tv reloadData];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+	return [Nicks count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	NSString *Id = @"ServerList";
+	UITableViewCell *tc=[tableView dequeueReusableCellWithIdentifier:Id];
+	if(tc == nil) tc = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle  reuseIdentifier:Id];
+	int n = [indexPath row];
+	tc.textLabel.text = [Nicks objectAtIndex:n];
+	tc.detailTextLabel.text = [Ips objectAtIndex:n];
+	return tc;
+}
+
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	ip.text = [Ips objectAtIndex:[indexPath row]];
+	return indexPath;
 }
 
 -(IBAction)clientClick:(id)sender
@@ -168,7 +302,11 @@
 			}
 			break;
 		case WAITING_CLIENT_ALERT:
-//			close(serverSock);
+			if(buttonIndex == 0)
+			{
+				[broadcast cancel];
+				close(serverSock);
+			}
 			break;
 	}
 }

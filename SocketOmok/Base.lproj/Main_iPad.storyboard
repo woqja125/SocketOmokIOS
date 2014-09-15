@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6245" systemVersion="13E28" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" initialViewController="fyK-Vp-ftP">
     <dependencies>
+        <deployment defaultVersion="1808" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6238"/>
     </dependencies>
     <scenes>
@@ -29,42 +30,59 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="17" id="YvG-iS-Jh2">
-                                <rect key="frame" x="203" y="331" width="363" height="30"/>
+                                <rect key="frame" x="203" y="216" width="363" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NickName" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hCF-y0-Pgv">
-                                <rect key="frame" x="344" y="285" width="80" height="21"/>
+                                <rect key="frame" x="344" y="151" width="80" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="5Y2-Er-f1I">
-                                <rect key="frame" x="342" y="502" width="84" height="30"/>
+                                <rect key="frame" x="578" y="390" width="92" height="22"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="ServerMode">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
+                                <state key="normal" title="ServerMode"/>
                                 <connections>
                                     <action selector="serverClick:" destination="lLt-b3-ONQ" eventType="touchUpInside" id="Mxa-W9-7l5"/>
                                 </connections>
                             </button>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Server IP" minimumFontSize="17" id="mp1-ya-Y3a">
-                                <rect key="frame" x="272" y="627" width="225" height="30"/>
+                                <rect key="frame" x="512" y="559" width="225" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="t59-qV-srI">
-                                <rect key="frame" x="345" y="675" width="79" height="30"/>
+                                <rect key="frame" x="585" y="631" width="79" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="ClientMode">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
                                     <action selector="clientClick:" destination="lLt-b3-ONQ" eventType="touchUpInside" id="yHS-b4-JeX"/>
+                                </connections>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="Mi7-b7-xxN">
+                                <rect key="frame" x="44" y="325" width="432" height="384"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="lLt-b3-ONQ" id="esQ-Nq-ewU"/>
+                                    <outlet property="delegate" destination="lLt-b3-ONQ" id="KjJ-19-ciC"/>
+                                </connections>
+                            </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="OEY-qZ-02n">
+                                <rect key="frame" x="234" y="750" width="53" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Refresh">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="refreshClick:" destination="lLt-b3-ONQ" eventType="touchUpInside" id="gtX-7A-1Bd"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -74,6 +92,8 @@
                     <connections>
                         <outlet property="ip" destination="mp1-ya-Y3a" id="zX4-mA-w8Y"/>
                         <outlet property="nick" destination="YvG-iS-Jh2" id="hE8-EY-Hd4"/>
+                        <outlet property="refreshbtn" destination="OEY-qZ-02n" id="Otm-it-XPx"/>
+                        <outlet property="tv" destination="Mi7-b7-xxN" id="AhU-nO-TlB"/>
                         <segue destination="Lp9-Hz-tEi" kind="push" identifier="StartGame" id="2fU-sg-auA"/>
                     </connections>
                 </viewController>

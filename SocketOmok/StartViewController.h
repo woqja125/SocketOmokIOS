@@ -21,7 +21,14 @@
 	
 	int isHost;
 	
+	NSThread *broadcast;
+	
+	NSMutableArray *Nicks, *Ips;
+	IBOutlet UITableView *tv;
+	IBOutlet UIButton *refreshbtn;
+	
 }
 -(IBAction)serverClick:(id)sender;
 -(IBAction)clientClick:(id)sender;
+-(IBAction)refreshClick:(id)sender;
 @end

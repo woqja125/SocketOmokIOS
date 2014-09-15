@@ -13,9 +13,6 @@
 	NSMutableArray *Output, *Input;
     int socketfd;
 	bool isConnected;
-	
-	NSDate *lastPing;
-
 }
 -(id)initWithfd:(int)fd;
 -(NSString *)readString;

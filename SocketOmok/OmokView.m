@@ -80,18 +80,32 @@
 	
 }
 
--(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+-(void)touched:(UITouch *)touch
 {
-	UITouch *touch = [touches anyObject];
 	CGFloat l = self.frame.size.height;
 	x = [touch locationInView:self].x/(l/19);
 	y = [touch locationInView:self].y/(l/19);
 	[self setNeedsDisplay];
 }
 
--(void)addStone:(int)x :(int)y :(int)Col
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	map[x][y] = Col;
+	[self touched:[touches anyObject]];
+}
+
+-(void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	[self touched:[touches anyObject]];
+}
+
+-(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	[self touched:[touches anyObject]];
+}
+
+-(void)addStone:(int)X :(int)Y :(int)Col
+{
+	map[X][Y] = Col;
 	[self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
 }
 

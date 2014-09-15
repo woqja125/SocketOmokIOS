@@ -22,12 +22,22 @@
         socketfd = fd;
 		Output = [[NSMutableArray alloc] init];
 		Input = [[NSMutableArray alloc] init];
-		Wthr = [[NSThread alloc] initWithTarget:self selector:@selector(write) object:nil];
-		Rthr = [[NSThread alloc] initWithTarget:self selector:@selector(read) object:nil];
-		[Wthr start];
-		[Rthr start];
+		lastPing = [[NSDate alloc] init];
+		isConnected = true;
+		[self performSelectorInBackground:@selector(write) withObject:nil];
+		[self performSelectorInBackground:@selector(read) withObject:nil];
+		[self performSelectorInBackground:@selector(Ping) withObject:nil];
     }
     return self;
+}
+
+-(void)Ping
+{
+	while([self isConnected])
+	{
+		[NSThread sleepForTimeInterval:1];
+		[self writeString:@"__Ping__"];
+	}
 }
 
 -(void)read
@@ -65,14 +75,17 @@
 		str[l] = 0;
 		t = [NSString stringWithUTF8String:str];
 		
-		//
-		//
+		if([t isEqualToString:@"__Ping__"])
+			lastPing = [NSDate date];
+		else [Input addObject:t];
+		
 	}
 }
 
 -(NSString *)readString
 {
-	while([Input count] == 0);
+	while([self isConnected] && [Input count] == 0);
+	if([Input count] == 0) return @"error";
 	NSString *t = [Input objectAtIndex:0];
 	[Input removeObjectAtIndex:0];
 	return t;
@@ -125,18 +138,17 @@
 {
 	if(isConnected)
 	{
-		//
+		NSDate *t = lastPing;
+		NSTimeInterval secondsBetweenDates = [t timeIntervalSinceNow];
+		if(secondsBetweenDates <= 2) return true;
 	}
-	return false;
+	return isConnected = false;
 }
 
 -(void)close
 {
-	NSLog(@"Socket Closed Fuck!!!!!!!");
 	close(socketfd);
 	isConnected = false;
-	[Rthr cancel];
-	[Wthr cancel];
 }
 
 @end

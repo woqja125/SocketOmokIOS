@@ -73,6 +73,7 @@
 		StoneOP.backgroundColor = [UIColor blackColor];
 	}
 	NowTurn = 2;
+	CloseMyself = false;
 	[self nextTurn];
 }
 
@@ -143,9 +144,9 @@
 {
 	NSString *t = [socket readString];
 	int x, y;
-	if([socket isClosed])
+	if(![socket isConnected])
 	{
-		[self performSelectorOnMainThread:@selector(EndGameWithErr) withObject:nil waitUntilDone:NO];
+		if(CloseMyself != true) [self performSelectorOnMainThread:@selector(EndGameWithErr) withObject:nil waitUntilDone:NO];
 		return;
 	}
 	sscanf(t.UTF8String, "%d %d", &x, &y);
@@ -163,9 +164,10 @@
 	map[x][y] = Col;
 	[omok addStone:x :y :Col];
 	[socket writeString:[NSString stringWithFormat:@"%d %d", x, y]];
-	if([socket isClosed])
+	if(![socket isConnected])
 	{
 		[self EndGameWithErr];
+		return;
 	}
 	[self nextTurn];
 }
@@ -190,6 +192,7 @@
 -(void) viewWillDisappear:(BOOL)animated {
     if ([self.navigationController.viewControllers indexOfObject:self]==NSNotFound)
 	{
+		CloseMyself = true;
 		[socket close];
 		if (isHost != -1) {
 			close(isHost);

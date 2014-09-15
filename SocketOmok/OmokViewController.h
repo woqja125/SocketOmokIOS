@@ -24,6 +24,8 @@
 	int Col, NowTurn;
 	int map[20][20];
 	IBOutlet OmokView *omok;
+	
+	bool CloseMyself;
 }
 -(void)setNickName:(NSString *)nick;
 -(void)setopNickName:(NSString *)opnick;

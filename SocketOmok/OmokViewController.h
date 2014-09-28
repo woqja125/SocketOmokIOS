@@ -20,6 +20,7 @@
 	
 	JBSocket *socket;
 	int isHost;
+	bool isSolo;
 	
 	int Col, NowTurn;
 	int map[20][20];
@@ -31,4 +32,5 @@
 -(void)setopNickName:(NSString *)opnick;
 -(void)setSock:(JBSocket*)sock;
 -(void)setHost:(int)X;
+-(void)setSolo:(bool)x;
 @end

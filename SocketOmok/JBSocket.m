@@ -102,7 +102,8 @@
 
 -(void)sendString:(NSString *)str
 {
-	char buff[1000], *tmp;
+	char buff[1000];
+	const char *tmp;
 	int l, s;
 	s = 0;
 	l = 0;

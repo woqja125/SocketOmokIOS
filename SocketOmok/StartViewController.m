@@ -37,7 +37,6 @@
 	[super viewDidLoad];
 	Ips = [[NSMutableArray alloc] init];
 	Nicks = [[NSMutableArray alloc] init];
-    // Do any additional setup after loading the view.
 }
 
 -(IBAction)serverClick:(id)sender
@@ -51,7 +50,7 @@
     struct sockaddr_in sin;
     memset(&sin, 0, sizeof(sin));
     sin.sin_len = sizeof(sin);
-    sin.sin_family = AF_INET; // or AF_INET6 (address family)
+    sin.sin_family = AF_INET;
     sin.sin_port = htons(OMOK_PORT);
     sin.sin_addr.s_addr= INADDR_ANY;
 	
@@ -99,7 +98,7 @@
 			NSLog(@"Failure to set broadcast! : %d", errno);
 		}
 		
-		char *toSend = data.UTF8String;
+		const char *toSend = data.UTF8String;
 		if (sendto(fd, toSend, [data length], 0, (struct sockaddr *)&addr4client, sizeof(addr4client)) == -1) {
 			NSLog(@"Failure to send! : %d", errno);
 		}
@@ -110,7 +109,7 @@
 -(void)waitforClient
 {
     struct sockaddr_in peer_name;
-    int socklen = sizeof(peer_name);
+    unsigned socklen = sizeof(peer_name);
 	int sock = accept(serverSock, (struct sockaddr*)&peer_name, &socklen);
 	if(sock < 0) return;
 	clientSocket = [[JBSocket alloc] initWithfd:sock];
@@ -118,9 +117,9 @@
 	[self performSelectorOnMainThread:@selector(findClient:) withObject:opNick waitUntilDone:NO];
 }
 
--(void)findClient:(NSString *)nick
+-(void)findClient:(NSString *)nickname
 {
-	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"find Client!" message:nick delegate:self cancelButtonTitle:@"취소" otherButtonTitles:@"OK", nil];
+	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"find Client!" message:nickname delegate:self cancelButtonTitle:@"취소" otherButtonTitles:@"OK", nil];
 	alert.tag = ACCEPT_CLIENT_ALERT;
 	[alert show];
 }
@@ -290,7 +289,6 @@
 			{
 				[clientSocket writeString:@"YES"];
 				[clientSocket writeString:nick.text];
-				//close(serverSock);
 				[alert1 dismissWithClickedButtonIndex:0 animated:YES];
 				isHost = serverSock;
 				[self startGame];
@@ -341,6 +339,12 @@
 		[view setHost:isHost];
 		[view setNickName:nick.text];
 		[view setopNickName:opNick];
+		[view setSolo:false];
+	}
+	if([segue.identifier isEqualToString:@"StartSoloGame"])
+	{
+		OmokViewController *view =[segue destinationViewController];
+		[view setSolo:true];
 	}
 }
 

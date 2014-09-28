@@ -28,25 +28,33 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	
-	nickNameView.text = nickName;
+	if(isSolo)
+	{
+		nickNameView.text = @"Player1";
+		opnickNameView.text = @"Player2";
+	}
+	else
+	{
+		nickNameView.text = nickName;
+		opnickNameView.text = opnickName;
+	}
 	nickNameView.font = [UIFont systemFontOfSize:40];
 	nickNameView.textAlignment = NSTextAlignmentCenter;
-	opnickNameView.text = opnickName;
 	opnickNameView.font = [UIFont systemFontOfSize:40];
 	opnickNameView.textAlignment = NSTextAlignmentCenter;
 	srand(time(NULL));
-	if(isHost != -1)
+	
+	if(isSolo || isHost != -1)
 	{
 		if(rand()%2 == 0)
 		{
 			Col = 1;
-			[socket writeString:@"2"];
+			if(!isSolo) [socket writeString:@"2"];
 		}
 		else
 		{
 			Col = 2;
-			[socket writeString:@"1"];
+			if(!isSolo) [socket writeString:@"1"];
 		}
 	}
 	else
@@ -60,6 +68,7 @@
 			[self EndGameWithErr];
 		}
 	}
+	
 	StoneME.layer.cornerRadius = 20;
 	StoneOP.layer.cornerRadius = 20;
 	if(Col == 1)
@@ -111,6 +120,11 @@
 		[self EndGame:t];
 		return;
 	}
+	if(isSolo)
+	{
+		[self getFromUser];
+		return;
+	}
 	if(NowTurn == Col)
 		[self getFromUser];
 	else
@@ -119,7 +133,9 @@
 
 -(void)EndGame:(int)x
 {
-	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"GameEnd" message:(x==Col)?@"WIN":@"LOSE" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+	UIAlertView *alert;
+	if(isSolo) alert = [[UIAlertView alloc] initWithTitle:@"GameEnd" message:(x==1)?@"BLACK WIN":@"WHITE WIN" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+	else alert = [[UIAlertView alloc] initWithTitle:@"GameEnd" message:(x==Col)?@"WIN":@"LOSE" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 	[alert show];
 }
 
@@ -157,12 +173,17 @@
 
 -(IBAction)OKClicked:(id)sender
 {
-	if(NowTurn != Col) return;
+	if(!isSolo && NowTurn != Col) return;
 	int x = [omok getX];
 	int y = [omok getY];
 	if(map[x][y] != 0) return;
-	map[x][y] = Col;
-	[omok addStone:x :y :Col];
+	map[x][y] = NowTurn;
+	[omok addStone:x :y :NowTurn];
+	if(isSolo)
+	{
+		[self nextTurn];
+		return;
+	}
 	[socket writeString:[NSString stringWithFormat:@"%d %d", x, y]];
 	if(![socket isConnected])
 	{
@@ -205,4 +226,5 @@
 -(void)setopNickName:(NSString *)opnick{opnickName = opnick;}
 -(void)setSock:(JBSocket*)sock{socket = sock;}
 -(void)setHost:(BOOL)X{isHost = X;}
+-(void)setSolo:(bool)x{isSolo = x;};
 @end
